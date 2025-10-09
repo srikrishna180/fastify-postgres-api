@@ -29,14 +29,14 @@ fastify.get("/test", async (request, reply) => {
 fastify.get("/quotes", async (request, reply) => {
   try {
     const res = await pool.query("SELECT * FROM quotes");
-    return { users: res.rows };
+    return { quotes: res.rows };
   } catch (err) {
     reply.status(500).send({ error: err.message });
   }
 });
 
 // GET user by ID
-fastify.get("/users/:id", async (request, reply) => {
+fastify.get("/quotes/:id", async (request, reply) => {
   try {
     const { id } = request.params;
     const res = await pool.query("SELECT * FROM quotes WHERE id = $1", [id]);
@@ -49,12 +49,39 @@ fastify.get("/users/:id", async (request, reply) => {
 // POST create user
 fastify.post("/quotes", async (request, reply) => {
   try {
-    const { name, email } = request.body;
+    const {
+      fullName,
+      emailAddress,
+      phone,
+      regoNumber,
+      pickupAddress,
+      notes,
+      status = "pending",
+    } = request.body;
+
     const res = await pool.query(
-      "INSERT INTO quotes (name, email) VALUES ($1, $2) RETURNING *",
-      [name, email]
+      `INSERT INTO quotes (
+        quote_full_name,
+        quote_email_address,
+        quote_phone,
+        quote_rego_number,
+        quote_pickup_address,
+        quote_notes,
+        status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *`,
+      [
+        fullName,
+        emailAddress,
+        phone,
+        regoNumber,
+        pickupAddress,
+        notes,
+        status || "pending",
+      ]
     );
-    reply.code(201).send({ user: res.rows[0] });
+
+    reply.code(201).send({ quote: res.rows[0] });
   } catch (err) {
     reply.status(500).send({ error: err.message });
   }
@@ -64,12 +91,45 @@ fastify.post("/quotes", async (request, reply) => {
 fastify.put("/quotes/:id", async (request, reply) => {
   try {
     const { id } = request.params;
-    const { name, email } = request.body;
+    const {
+      fullName,
+      emailAddress,
+      phone,
+      regoNumber,
+      pickupAddress,
+      notes,
+      status,
+    } = request.body;
+
     const res = await pool.query(
-      "UPDATE quotes SET name = $1, email = $2 WHERE id = $3 RETURNING *",
-      [name, email, id]
+      `UPDATE quotes SET
+        quote_full_name = $1,
+        quote_email_address = $2,
+        quote_phone = $3,
+        quote_rego_number = $4,
+        quote_pickup_address = $5,
+        quote_notes = $6,
+        status = $7,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $8
+      RETURNING *`,
+      [
+        fullName,
+        emailAddress,
+        phone,
+        regoNumber,
+        pickupAddress,
+        notes,
+        status,
+        id,
+      ]
     );
-    return { user: res.rows[0] };
+
+    if (res.rows.length === 0) {
+      return reply.code(404).send({ error: "Quote not found" });
+    }
+
+    return { quote: res.rows[0] };
   } catch (err) {
     reply.status(500).send({ error: err.message });
   }
