@@ -1,0 +1,70 @@
+name: Deploy Fastify API
+
+on:
+  push:
+    branches: ["dev", "qa", "main"]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Set environment variables based on branch
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "DEPLOY_DIR=/var/www/fastify-api-prod" >> $GITHUB_ENV
+            echo "PM2_NAME=fastify-api-prod" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == "refs/heads/qa" ]]; then
+            echo "DEPLOY_DIR=/var/www/fastify-api-qa" >> $GITHUB_ENV
+            echo "PM2_NAME=fastify-api-qa" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
+            echo "DEPLOY_DIR=/var/www/fastify-api-dev" >> $GITHUB_ENV
+            echo "PM2_NAME=fastify-api-dev" >> $GITHUB_ENV
+          else
+            echo "Unknown branch, skipping deployment."
+            exit 1
+          fi
+
+      - name: Deploy Fastify API to EC2
+        run: |
+          sudo mkdir -p "$DEPLOY_DIR"
+          sudo rm -rf "$DEPLOY_DIR"/*
+          sudo cp -r . "$DEPLOY_DIR"/
+
+      - name: Install production dependencies
+        run: |
+          cd "$DEPLOY_DIR"
+          npm ci --omit=dev
+
+      - name: Restart PM2 process
+        run: |
+          cd "$DEPLOY_DIR"
+
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            pm2 delete "$PM2_NAME" || true
+            pm2 start app.js --name "$PM2_NAME"
+          elif [[ "$GITHUB_REF" == "refs/heads/qa" ]]; then
+            pm2 delete "$PM2_NAME" || true
+            pm2 start app.js --name "$PM2_NAME"
+          elif [[ "$GITHUB_REF" == "refs/heads/dev" ]]; then
+            pm2 delete "$PM2_NAME" || true
+            pm2 start app.js --name "$PM2_NAME"
+          else
+            echo "Unknown branch. Cannot start PM2 process."
+            exit 1
+          fi
+
+          pm2 save
