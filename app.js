@@ -26,9 +26,9 @@ fastify.get("/test", async (request, reply) => {
 // CRUD Example for "users" table
 
 // GET all users
-fastify.get("/jobs", async (request, reply) => {
+fastify.get("/quotes", async (request, reply) => {
   try {
-    const res = await pool.query("SELECT * FROM towing_jobs_2");
+    const res = await pool.query("SELECT * FROM quotes");
     return { users: res.rows };
   } catch (err) {
     reply.status(500).send({ error: err.message });
@@ -39,7 +39,7 @@ fastify.get("/jobs", async (request, reply) => {
 fastify.get("/users/:id", async (request, reply) => {
   try {
     const { id } = request.params;
-    const res = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+    const res = await pool.query("SELECT * FROM quotes WHERE id = $1", [id]);
     return { user: res.rows[0] };
   } catch (err) {
     reply.status(500).send({ error: err.message });
@@ -47,11 +47,11 @@ fastify.get("/users/:id", async (request, reply) => {
 });
 
 // POST create user
-fastify.post("/jobs", async (request, reply) => {
+fastify.post("/quotes", async (request, reply) => {
   try {
     const { name, email } = request.body;
     const res = await pool.query(
-      "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *",
+      "INSERT INTO quotes (name, email) VALUES ($1, $2) RETURNING *",
       [name, email]
     );
     reply.code(201).send({ user: res.rows[0] });
@@ -61,12 +61,12 @@ fastify.post("/jobs", async (request, reply) => {
 });
 
 // PUT update user
-fastify.put("/jobs/:id", async (request, reply) => {
+fastify.put("/quotes/:id", async (request, reply) => {
   try {
     const { id } = request.params;
     const { name, email } = request.body;
     const res = await pool.query(
-      "UPDATE users SET name = $1, email = $2 WHERE id = $3 RETURNING *",
+      "UPDATE quotes SET name = $1, email = $2 WHERE id = $3 RETURNING *",
       [name, email, id]
     );
     return { user: res.rows[0] };
@@ -76,10 +76,10 @@ fastify.put("/jobs/:id", async (request, reply) => {
 });
 
 // DELETE user
-fastify.delete("/jobs/:id", async (request, reply) => {
+fastify.delete("/quotes/:id", async (request, reply) => {
   try {
     const { id } = request.params;
-    await pool.query("DELETE FROM users WHERE id = $1", [id]);
+    await pool.query("DELETE FROM quotes WHERE id = $1", [id]);
     reply.code(204).send();
   } catch (err) {
     reply.status(500).send({ error: err.message });
