@@ -91,47 +91,49 @@ fastify.post("/quotes", async (request, reply) => {
 fastify.put("/quotes/:id", async (request, reply) => {
   try {
     const { id } = request.params;
-    const {
-      fullName,
-      emailAddress,
-      phone,
-      regoNumber,
-      pickupAddress,
-      notes,
-      status,
-    } = request.body;
+    const updates = request.body;
 
-    const res = await pool.query(
-      `UPDATE quotes SET
-        quote_full_name = $1,
-        quote_email_address = $2,
-        quote_phone = $3,
-        quote_rego_number = $4,
-        quote_pickup_address = $5,
-        quote_notes = $6,
-        status = $7,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $8
-      RETURNING *`,
-      [
-        fullName,
-        emailAddress,
-        phone,
-        regoNumber,
-        pickupAddress,
-        notes,
-        status,
-        id,
-      ]
-    );
+    if (!id) {
+      return reply.code(400).send({ error: "Missing quote ID" });
+    }
 
-    if (res.rows.length === 0) {
+    if (!updates || Object.keys(updates).length === 0) {
+      return reply.code(400).send({ error: "No fields provided to update" });
+    }
+
+    // Build dynamic SET clause
+    const setClauses = [];
+    const values = [];
+    let index = 1;
+
+    for (const [field, value] of Object.entries(updates)) {
+      setClauses.push(`${field} = $${index}`);
+      values.push(value);
+      index++;
+    }
+
+    // Add updated_at timestamp
+    setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
+
+    // Final query
+    const query = `
+      UPDATE quotes
+      SET ${setClauses.join(", ")}
+      WHERE id = $${index}
+      RETURNING *`;
+
+    values.push(id);
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
       return reply.code(404).send({ error: "Quote not found" });
     }
 
-    return { quote: res.rows[0] };
+    return { quote: result.rows[0] };
   } catch (err) {
-    reply.status(500).send({ error: err.message });
+    console.error(err);
+    return reply.status(500).send({ error: "Internal Server Error" });
   }
 });
 
