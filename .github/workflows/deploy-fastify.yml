@@ -92,9 +92,15 @@ jobs:
         run: |
           sudo mkdir -p "$DEPLOY_DIR"
           sudo tee "$DEPLOY_DIR/.env" > /dev/null <<EOF
-          DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}
-          PINO_LOG_LEVEL=${{ secrets.PROD_PINO_LOG_LEVEL }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          PINO_LOG_LEVEL=${{ secrets.PINO_LOG_LEVEL }}
           NODE_ENV=${{ secrets.NODE_ENV }}
-          PORT=${{ secrets.PROD_PORT }}
+          PORT=${{ secrets.PORT }}
           EOF
           echo ".env file created/updated in $DEPLOY_DIR"
+
+      - name: Deploy code to server
+        run: |
+          # Copy all files except .env (we already created it)
+          sudo rsync -av --exclude='.env' --exclude='node_modules' --exclude='dist' ./ "$DEPLOY_DIR"/
+          echo "Code deployed to $DEPLOY_DIR"
