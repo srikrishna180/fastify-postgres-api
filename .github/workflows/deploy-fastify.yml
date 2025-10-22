@@ -104,3 +104,27 @@ jobs:
           # Copy all files except .env (we already created it)
           sudo rsync -av --exclude='.env' --exclude='node_modules' --exclude='dist' ./ "$DEPLOY_DIR"/
           echo "Code deployed to $DEPLOY_DIR"
+
+      - name: Install all dependencies
+        run: |
+          cd "$DEPLOY_DIR"
+          npm ci
+          echo "All dependencies installed"
+
+      - name: Build TypeScript
+        run: |
+          cd "$DEPLOY_DIR"
+          npm run build
+          echo "TypeScript compiled successfully"
+
+      - name: Run database migrations
+        run: |
+          cd "$DEPLOY_DIR"
+          npm run db:migrate
+          echo "Database migrations completed"
+
+      - name: Remove dev dependencies
+        run: |
+          cd "$DEPLOY_DIR"
+          npm prune --production
+          echo "Dev dependencies removed"
