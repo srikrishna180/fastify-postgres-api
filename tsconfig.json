@@ -50,22 +50,24 @@
 
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "lib": ["es2020"],
     "module": "commonjs",
+    "target": "es2020",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "incremental": true,
+    "noImplicitAny": false,
     "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "src/*": ["src/*"]
+      "config/*": ["config/*"]
     },
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "strict": false,
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist", "coverage"]
 }
 
 

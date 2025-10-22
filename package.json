@@ -1,9 +1,10 @@
 {
   "name": "fastify-postgres-api",
   "version": "1.0.0",
+  "main": "main.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc-alias",
-    "start": "node ./dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "dev": "tsx watch src/main.ts"
