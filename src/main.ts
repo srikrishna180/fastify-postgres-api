@@ -9,8 +9,10 @@ const main = async () => {
             fastify.log.info(`Listening on ${port}...`)
         })
     } catch (error) {
-        fastify.log.error('fastify.listen:', error)
+        // fastify.log.error('fastify.listen:', error)
+        fastify.log.error(error, 'fastify.listen:')
         process.exit(1)
+
     }
 }
 

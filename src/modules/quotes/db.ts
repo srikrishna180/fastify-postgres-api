@@ -11,7 +11,7 @@ export const getQuotes = async () => {
     return result
 }
 
-export const createQuotes = async (insertObject) => {
+export const createQuote = async (insertObject: any) => {
     const result = await db.insert(quotes).values(insertObject);
 
     return result.rowCount

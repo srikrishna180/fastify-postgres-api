@@ -1,5 +1,16 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import {createQuotes, getQuotes} from './db'
+import {createQuote, getQuotes} from './db'
+
+interface CreateQuoteBody {
+    fullName: string
+    emailAddress?: string
+    phone: string
+    regoNumber?: string
+    pickupAddress: string
+    notes?: string
+    status?: string
+}
+
 
 export const getQuotesHandler = async (
     request: FastifyRequest,
@@ -11,7 +22,7 @@ export const getQuotesHandler = async (
 }
 
 export const saveQuotesHandler = async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Body: CreateQuoteBody }>,
     reply: FastifyReply,
 ) => {
     const {
@@ -24,7 +35,7 @@ export const saveQuotesHandler = async (
         status = "pending",
     } = request.body;
 
-    const result = await createQuotes({
+    const result = await createQuote({
         fullName,
         email: emailAddress,
         phone,
