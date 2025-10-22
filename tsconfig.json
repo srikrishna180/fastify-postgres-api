@@ -54,6 +54,9 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "baseUrl": "./",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
