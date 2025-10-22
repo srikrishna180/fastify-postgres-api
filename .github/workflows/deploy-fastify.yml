@@ -104,15 +104,12 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Create deployment directory
             mkdir -p /var/www/fastify-api-prod
-            
-            # Create .env file
             cat > /var/www/fastify-api-prod/.env <<EOF
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            PINO_LOG_LEVEL=${{ secrets.PINO_LOG_LEVEL }}
+            DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}
+            PINO_LOG_LEVEL=${{ secrets.PROD_PINO_LOG_LEVEL }}
             NODE_ENV=${{ secrets.NODE_ENV }}
-            PORT=${{ secrets.PORT }}
+            PORT=${{ secrets.PROD_PORT }}
             EOF
 
       - name: Copy files to EC2
@@ -121,11 +118,11 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "dist/,package.json,package-lock.json,drizzle.config.ts,migrations/"
+          source: "dist/,package.json,package-lock.json,drizzle.config.ts,migrations/,src/"
           target: "/var/www/fastify-api-prod"
           strip_components: 0
 
-      - name: Install production dependencies and run migrations
+      - name: Install production dependencies and restart
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
