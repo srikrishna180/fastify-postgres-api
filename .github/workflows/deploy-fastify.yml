@@ -79,10 +79,12 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    timeout-minutes: 15  # Kill the entire job after 15 minutes
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        timeout-minutes: 2
 
       - name: Set deployment directory
         run: |
@@ -101,30 +103,13 @@ jobs:
 
       - name: Deploy code to server
         run: |
-          # Copy all files except .env (we already created it)
           sudo rsync -av --exclude='.env' --exclude='node_modules' --exclude='dist' ./ "$DEPLOY_DIR"/
           echo "Code deployed to $DEPLOY_DIR"
 
       - name: Install all dependencies
+        timeout-minutes: 5  # Kill this step after 5 minutes
         run: |
           cd "$DEPLOY_DIR"
+          echo "Starting npm ci at $(date)"
           npm ci
-          echo "All dependencies installed"
-
-      - name: Build TypeScript
-        run: |
-          cd "$DEPLOY_DIR"
-          npm run build
-          echo "TypeScript compiled successfully"
-
-      - name: Run database migrations
-        run: |
-          cd "$DEPLOY_DIR"
-          npm run db:migrate
-          echo "Database migrations completed"
-
-      - name: Remove dev dependencies
-        run: |
-          cd "$DEPLOY_DIR"
-          npm prune --production
-          echo "Dev dependencies removed"
+          echo "Completed npm ci at $(date)"
