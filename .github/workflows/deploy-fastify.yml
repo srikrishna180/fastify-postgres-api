@@ -78,38 +78,63 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
-    timeout-minutes: 15  # Kill the entire job after 15 minutes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        timeout-minutes: 2
 
-      - name: Set deployment directory
-        run: |
-          echo "DEPLOY_DIR=/var/www/fastify-api-prod" >> $GITHUB_ENV
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
 
-      - name: Create or update .env file
-        run: |
-          sudo mkdir -p "$DEPLOY_DIR"
-          sudo tee "$DEPLOY_DIR/.env" > /dev/null <<EOF
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          PINO_LOG_LEVEL=${{ secrets.PINO_LOG_LEVEL }}
-          NODE_ENV=${{ secrets.NODE_ENV }}
-          PORT=${{ secrets.PORT }}
-          EOF
-          echo ".env file created/updated in $DEPLOY_DIR"
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Deploy code to server
-        run: |
-          sudo rsync -av --exclude='.env' --exclude='node_modules' --exclude='dist' ./ "$DEPLOY_DIR"/
-          echo "Code deployed to $DEPLOY_DIR"
+      - name: Build TypeScript
+        run: npm run build
 
-      - name: Install all dependencies
-        timeout-minutes: 5  # Kill this step after 5 minutes
-        run: |
-          cd "$DEPLOY_DIR"
-          echo "Starting npm ci at $(date)"
-          npm ci
-          echo "Completed npm ci at $(date)"
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Create deployment directory
+            mkdir -p /var/www/fastify-api-prod
+            
+            # Create .env file
+            cat > /var/www/fastify-api-prod/.env <<EOF
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            PINO_LOG_LEVEL=${{ secrets.PINO_LOG_LEVEL }}
+            NODE_ENV=${{ secrets.NODE_ENV }}
+            PORT=${{ secrets.PORT }}
+            EOF
+
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "dist/,package.json,package-lock.json,drizzle.config.ts,migrations/"
+          target: "/var/www/fastify-api-prod"
+          strip_components: 0
+
+      - name: Install production dependencies and run migrations
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /var/www/fastify-api-prod
+            npm ci --omit=dev
+            npm run db:migrate
+            pm2 delete fastify-api-prod || true
+            pm2 start dist/main.js --name fastify-api-prod
+            pm2 save
