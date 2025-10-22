@@ -1,7 +1,6 @@
 {
   "name": "fastify-postgres-api",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc-alias",
     "start": "node ./dist/main.js",

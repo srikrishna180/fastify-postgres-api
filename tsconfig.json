@@ -51,7 +51,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
+    "module": "commonjs",
     "moduleResolution": "node",
     "baseUrl": "./",
     "rootDir": "./src",
@@ -64,4 +64,5 @@
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
+
 
