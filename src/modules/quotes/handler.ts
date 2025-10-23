@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import {createQuote, getQuotes} from './db'
+import {createQuote, deleteQuoteById, getQuoteById, getQuotes, updateQuoteById} from './db'
 
 interface CreateQuoteBody {
     fullName: string
@@ -45,4 +45,35 @@ export const saveQuotesHandler = async (
         status
     })
     return result;
+}
+
+export const updateQuotesHandler = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const updates = request.body as Record<string, any>;
+
+    if (!id) {
+        return reply.code(400).send({ error: "Missing quote ID" });
+    }
+
+    if (!updates || Object.keys(updates).length === 0) {
+        return reply.code(400).send({ error: "No fields provided to update" });
+    }
+
+    // Automatically add updated_at timestamp
+    updates.updatedAt = new Date();
+
+    const result = await updateQuoteById(id, updates);
+    reply.send(result?.rowCount);
+
+}
+
+export const deleteQuotesByIdHandler = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const result = await deleteQuoteById(id);
+    reply.send(result?.rowCount);
+}
+
+export const getQuotesByIdHandler = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    reply.send(await getQuoteById(id));
 }

@@ -1,4 +1,4 @@
-import { desc } from 'drizzle-orm'
+import {desc, eq} from 'drizzle-orm'
 import { db } from '../../db'
 import { quotes } from '../../db/schema'
 
@@ -16,3 +16,9 @@ export const createQuote = async (insertObject: any) => {
 
     return result.rowCount
 }
+
+export const getQuoteById = async (id: string) => await db.select().from(quotes).where(eq(quotes.id, id));
+
+export const updateQuoteById = async (id: string, updateObject: any) => await db.update(quotes).set(updateObject).where(eq(quotes.id, id));
+
+export const deleteQuoteById = async (id: string) => await db.delete(quotes).where(eq(quotes.id, id));
