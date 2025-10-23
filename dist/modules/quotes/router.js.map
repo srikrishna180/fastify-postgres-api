@@ -1,0 +1,1 @@
+{"version":3,"file":"router.js","sourceRoot":"","sources":["../../../src/modules/quotes/router.ts"],"names":[],"mappings":";;;AACA,uCAA6D;AAEtD,MAAM,YAAY,GAAG,CAAC,OAAwB,EAAE,EAAE;IACrD,OAAO,CAAC,GAAG,CAAC,GAAG,EAAE,0BAAgB,CAAC,CAAA;IAClC,OAAO,CAAC,IAAI,CAAC,GAAG,EAAE,2BAAiB,CAAC,CAAA;AACxC,CAAC,CAAA;AAHY,QAAA,YAAY,gBAGxB"}

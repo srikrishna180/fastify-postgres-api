@@ -1,6 +1,6 @@
 import { desc } from 'drizzle-orm'
-import { db } from 'src/db'
-import { quotes } from 'src/db/schema'
+import { db } from '../../db'
+import { quotes } from '../../db/schema'
 
 export const getQuotes = async () => {
     const result = await db

@@ -1,9 +1,9 @@
 import Fastify from 'fastify'
 import env from '@fastify/env'
 import dotenv from 'dotenv'
-import { createLogger } from 'src/utils/logger.js';
-import type { Level } from 'src/utils/logger.js';
-import {quotesRouter} from "src/modules/quotes/router.js";
+import { createLogger } from './utils/logger';
+import type { Level } from './utils/logger';
+import {quotesRouter} from "./modules/quotes/router";
 
 dotenv.config()
 

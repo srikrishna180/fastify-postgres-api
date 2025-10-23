@@ -1,4 +1,4 @@
-import { createServer } from 'src/server'
+import { createServer } from './server'
 
 const main = async () => {
     const fastify = await createServer();
