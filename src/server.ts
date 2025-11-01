@@ -61,7 +61,7 @@ export const createServer = async () => {
     await fastify.register(env, options).after()
 
     fastify.get('/ping', (request, reply) => {
-        reply.send({ message: 'pong' })
+        reply.send({ message: 'pong!' })
     })
 
     /* Add the quotes router under the `ping` endpoint */
