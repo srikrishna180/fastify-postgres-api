@@ -8,6 +8,13 @@
       "when": 1761109960009,
       "tag": "0000_lucky_pestilence",
       "breakpoints": false
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762305715737,
+      "tag": "0001_lazy_fallen_one",
+      "breakpoints": false
     }
   ]
 }

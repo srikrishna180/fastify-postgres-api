@@ -4,6 +4,8 @@ import dotenv from 'dotenv'
 import { createLogger } from './utils/logger';
 import type { Level } from './utils/logger';
 import {quotesRouter} from "./modules/quotes/router";
+import { authRoutes } from './modules/auth/router';
+import {registerJWT} from "./utils/jwt";
 
 dotenv.config()
 
@@ -63,9 +65,11 @@ export const createServer = async () => {
     fastify.get('/ping', (request, reply) => {
         reply.send({ message: 'pong!' })
     })
-
+    // ⭐ MUST register JWT first with await
+    await registerJWT(fastify);
     /* Add the quotes router under the `ping` endpoint */
-    fastify.register(quotesRouter, { prefix: 'api/quotes' })
+    fastify.register(quotesRouter, { prefix: 'api/quotes' });
+    fastify.register(authRoutes, { prefix: '/api/auth' });
 
     return fastify
 }
